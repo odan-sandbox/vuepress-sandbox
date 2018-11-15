@@ -1,0 +1,27 @@
+version: 2.1
+
+orbs:
+  node: circleci/node@0.0.4
+
+jobs:
+  build:
+    executor: node/node
+    steps:
+      - checkout
+      - node/with-cache:
+          use-strict-cache: true
+          steps:
+            - run:
+                name: install dependency
+                command: yarn
+      - run:
+          name: build docs
+          command: yarn docs:build
+      - store_artifacts:
+          path: docs/.vuepress/dist/
+          destination: docs-dist
+      
+workflows:
+  build-and-deploy:
+    jobs:
+      - build
