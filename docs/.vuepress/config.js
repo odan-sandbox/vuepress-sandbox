@@ -1,3 +1,3 @@
 module.exports = {
-    base: 'vuepress-sandbox'
+    base: '/vuepress-sandbox/'
 }
