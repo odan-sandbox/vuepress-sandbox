@@ -9,7 +9,6 @@ jobs:
     steps:
       - checkout
       - node/with-cache:
-          use-strict-cache: true
           steps:
             - run:
                 name: install dependency
@@ -17,11 +16,38 @@ jobs:
       - run:
           name: build docs
           command: yarn docs:build
-      - store_artifacts:
-          path: docs/.vuepress/dist/
-          destination: docs-dist
-      
+      - persist_to_workspace:
+          root: .
+          paths:
+              - ./docs/.vuepress/dist/
+  deploy:
+    machine: true
+    steps:
+      - attach_workspace:
+          at: .
+      - add_ssh_keys:
+          fingerprints:
+            - "28:0c:38:05:f8:9c:81:b0:ed:23:ef:95:54:fa:96:91"
+      - run:
+          name: initialize git
+          command: |
+            git init .
+            git config --global user.name "circle ci"
+            git config --global user.email "odan3240@gmail.com"
+          working_directory: ./docs/.vuepress/dist/
+      - run:
+          name: deploy to gh-pages
+          command: |
+            git checkout -b gh-pages
+            git add ./
+            git commit -m 'Update [ci skip]'
+            git push -f git@github.com:odanado/vuepress-sandbox.git gh-pages
+          working_directory: ./docs/.vuepress/dist/
+
 workflows:
   build-and-deploy:
     jobs:
       - build
+      - deploy:
+          requires:
+            - build
